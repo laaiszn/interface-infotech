@@ -10,7 +10,7 @@ function BoasVindas(): JSX.Element {
                 Seja bem-vindo ao InfoTech, a sua loja de produtos de tecnologia! Explore nossa ampla variedade de produtos,
                  desde os mais recentes gadgets até acessórios essenciais para o seu dia a dia. Aproveite nossas 
                  ofertas exclusivas e descubra as últimas tendências em tecnologia. E
-                 stamos aqui para proporcionar a melhor experiência de compra para você!
+                 estamos aqui para proporcionar a melhor experiência de compra para você!
             </p>
         </main>
     );
