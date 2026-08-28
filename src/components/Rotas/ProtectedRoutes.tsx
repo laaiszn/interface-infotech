@@ -17,7 +17,7 @@ interface ProtectedRouteProps {
  * @returns Elemento renderizado caso o usuário esteja autenticado, caso contrário, redireciona para a página de login
  */
 const ProtectedRoute = ({ element: Element, ...rest }: ProtectedRouteProps) => {
-    const isAuthenticated = !!localStorage.getItem('isAuth');   // recupera o valor de isAuth no localstorage
+    const isAuthenticated = !!localStorage.getItem('isAuth');   
 
     return isAuthenticated ? <Element {...rest} /> : <Navigate to="/login" />;  // verifica se o usuário está autenticado (isAuth = true), caso sim, renderiza o elemento, caso contrário, redireciona para a página de login
 };
