@@ -1,3 +1,4 @@
+
 import { useState, type JSX } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthRequests from "../../fetch/AuthRequests";
@@ -60,65 +61,48 @@ function Navegacao(): JSX.Element {
     };
 
     return (
-        <header className="bg-slate-700 relative z-50">
+        <header className="navbar">
 
             {/* Barra principal */}
-            <div className="flex items-center justify-between px-4 py-3 min-h-[64px]">
+            <div className="navbar-main">
 
-                {/* Logo + Links */}
-                <div className="flex items-center gap-2">
-
-                    <nav className="hidden sm:flex items-center gap-1 ml-4">
-
-                        {links.map((link) => (
-                            <button
-                                key={link.url}
-                                type="button"
-                                onClick={() => navegar(link.url)}
-                                className="flex items-center gap-1.5 text-white text-sm px-3 py-2 rounded hover:bg-white/15 transition-colors"
-                            >
-                                <i className={link.icon}></i>
-
-                                <span>
-                                    {link.label}
-                                </span>
-                            </button>
-                        ))}
-
-                    </nav>
-
+                {/* Logo */}
+                <div className="navbar-brand">
+                    <span>InfoTech</span>
                 </div>
 
-                {/* Botão do menu mobile */}
-                <button
-                    type="button"
-                    className="sm:hidden text-white p-3 rounded bg-slate-600 hover:bg-slate-500 transition-colors flex items-center gap-2"
-                    onClick={() => setMenuAberto(!menuAberto)}
-                    aria-label="Menu"
-                >
-                    <i
-                        className={`pi ${
-                            menuAberto ? "pi-times" : "pi-bars"
-                        } text-lg`}
-                    ></i>
+                {/* Links */}
+                <nav className="navbar-links">
 
-                    <span className="text-sm">
-                        Menu
-                    </span>
-                </button>
+                    {links.map((link) => (
+                        <button
+                            key={link.url}
+                            type="button"
+                            onClick={() => navegar(link.url)}
+                            className="navbar-link"
+                        >
+                            <i className={link.icon}></i>
+
+                            <span>
+                                {link.label}
+                            </span>
+                        </button>
+                    ))}
+
+                </nav>
 
                 {/* Área do usuário */}
-                <div className="hidden sm:flex items-center gap-3">
+                <div className="user-area">
 
                     {isAuthenticated ? (
                         <>
-                            <div className="flex flex-col items-end">
+                            <div className="user-info">
 
-                                <span className="text-white text-sm font-semibold leading-tight">
+                                <span className="user-name">
                                     {nome}
                                 </span>
 
-                                <span className="text-white/70 text-xs leading-tight">
+                                <span className="user-email">
                                     {email}
                                 </span>
 
@@ -127,12 +111,12 @@ function Navegacao(): JSX.Element {
                             <img
                                 src={avatarImage}
                                 alt="Avatar"
-                                className="w-9 h-9 rounded-full object-cover"
+                                className="user-avatar"
                             />
 
                             <button
                                 type="button"
-                                className="bg-white text-slate-700 px-4 py-1.5 rounded text-sm font-medium flex items-center gap-1.5 hover:bg-gray-100 transition-colors"
+                                className="login-button"
                                 onClick={sair}
                             >
                                 <i className="pi pi-sign-out"></i>
@@ -143,7 +127,7 @@ function Navegacao(): JSX.Element {
                     ) : (
                         <button
                             type="button"
-                            className="bg-white text-slate-700 px-4 py-1.5 rounded text-sm font-medium flex items-center gap-1.5 hover:bg-gray-100 transition-colors"
+                            className="login-button"
                             onClick={() => navegar("/login")}
                         >
                             <i className="pi pi-sign-in"></i>
@@ -154,71 +138,85 @@ function Navegacao(): JSX.Element {
 
                 </div>
 
+                {/* Botão mobile */}
+                <button
+                    type="button"
+                    className="mobile-menu-button"
+                    onClick={() => setMenuAberto(!menuAberto)}
+                    aria-label="Menu"
+                >
+                    <i
+                        className={`pi ${
+                            menuAberto ? "pi-times" : "pi-bars"
+                        }`}
+                    ></i>
+
+                    <span>
+                        Menu
+                    </span>
+                </button>
+
             </div>
 
             {/* Menu mobile */}
             {menuAberto && (
-                <div className="sm:hidden bg-slate-800 border-t border-slate-600 px-4 pb-4 flex flex-col gap-1">
+                <div className="mobile-menu">
 
                     {links.map((link) => (
                         <button
                             key={link.url}
                             type="button"
                             onClick={() => navegar(link.url)}
-                            className="flex items-center gap-2 text-white text-sm px-3 py-2.5 rounded hover:bg-white/15 transition-colors text-left"
+                            className="mobile-link"
                         >
                             <i className={link.icon}></i>
 
-                            {link.label}
+                            <span>
+                                {link.label}
+                            </span>
                         </button>
                     ))}
 
-                    <hr className="border-slate-600 my-2" />
+                    <hr />
 
                     {isAuthenticated ? (
                         <>
-                            {/* Usuário */}
-                            <div className="flex items-center gap-3 px-3 py-2">
+                            <div className="mobile-user">
 
                                 <img
                                     src={avatarImage}
                                     alt="Avatar"
-                                    className="w-8 h-8 rounded-full object-cover"
+                                    className="user-avatar"
                                 />
 
-                                <div>
-
-                                    <p className="text-white text-sm font-semibold m-0">
+                                <div className="user-info">
+                                    <span className="user-name">
                                         {nome}
-                                    </p>
+                                    </span>
 
-                                    <p className="text-white/70 text-xs m-0">
+                                    <span className="user-email">
                                         {email}
-                                    </p>
-
+                                    </span>
                                 </div>
 
                             </div>
 
-                            {/* Botão sair */}
                             <button
                                 type="button"
-                                className="mt-1 bg-white text-slate-700 px-4 py-2 rounded text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors"
+                                className="mobile-login-button"
                                 onClick={sair}
                             >
                                 <i className="pi pi-sign-out"></i>
-
                                 Sair
                             </button>
                         </>
                     ) : (
                         <button
                             type="button"
-                            className="bg-white text-slate-700 px-4 py-2 rounded text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors"
+                            className="mobile-login-button"
                             onClick={() => navegar("/login")}
                         >
                             <i className="pi pi-sign-in"></i>
-
                             Login
                         </button>
                     )}
