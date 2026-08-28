@@ -61,7 +61,7 @@ function Navegacao(): JSX.Element {
     };
 
     return (
-        <header className="navbar">
+        <header className="bg-slate-700 relative z-50">
 
             {/* Barra principal */}
             <div className="navbar-main">

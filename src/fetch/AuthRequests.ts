@@ -1,10 +1,10 @@
-const API_URL= import.meta.env.VITE_API_SERVER_URL;
+const API_URL = import.meta.env.VITE_API_SERVER_URL;
 
 class AuthRequests {
 
     private serverUrl: string;
     private endpointLogin: string;
-    
+
     /**
      * Construtor das rotas e do endereço do servidor
      */
@@ -20,41 +20,39 @@ class AuthRequests {
      * @param {*} login - email e senha
      * @returns **true** caso sucesso, **false** caso erro
      */
-    async login(login: { email: string, senha: string}) {       
+    async login(login: { email: string, senha: string }) {
         try {
-            // faz a requisição POST ao servidor...
             const response = await fetch(`${this.serverUrl}${this.endpointLogin}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                // passando as informações de login no corpo da requisição
                 body: JSON.stringify(login)
             });
-            
-            // Verifica alguma falha na comunicação
-            if (!response.ok) {
-                console.log('Erro na autenticação');
-                throw new Error('Falha no login');
-            }
-            // caso a requisição seja bem sucedida, armazena a resposta em uma constante
-            const data = await response.json();
-            console.log( data );
 
-            // verifica se o atributo auth da resposta tem o valor TRUE, se tiver é porque a autenticação teve sucesso
+            console.log('STATUS:', response.status);
+            console.log('URL:', response.url);
+
+            const data = await response.json();
+
+            console.log('RESPOSTA DO BACKEND:', data);
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Falha no login');
+            }
+
             if (data.auth) {
-                // persistem o token, o nome e o id do professor no localstorage
                 this.persistToken(data.token, data.usuario, data.auth);
             }
 
-            // retorna a resposta da requisição a quem chamou a função
             return true;
+
         } catch (error) {
-            // lança um erro em caso de falha
-            console.error('Erro: ', error);
+            console.error('Erro:', error);
             throw error;
         }
     }
+
 
     /**
      * Persiste o token no localStorage
@@ -62,7 +60,7 @@ class AuthRequests {
      * @param {*} usuario - objeto com informações do usuário vindos do servidor
      * @param {*} isAuth - estado da autenticação do usuário
      */
-    persistToken(token: string, usuario: {id_usuario: number, nome: string, email: string, role: string}, isAuth: boolean) {
+    persistToken(token: string, usuario: { id_usuario: number, nome: string, email: string, role: string }, isAuth: boolean) {
         localStorage.setItem('token', token);
         localStorage.setItem('nome', usuario.nome);
         localStorage.setItem('idUsuario', usuario.id_usuario.toString());
@@ -95,7 +93,7 @@ class AuthRequests {
     checkTokenExpiry() {
         // recupera o valor do token no localstorage
         const token = localStorage.getItem('token');
-        
+
         // verifica se o valor é diferente de vazio
         if (token) {
             // recupera a data de expiração do token
