@@ -1,7 +1,7 @@
 import { useState, type JSX } from "react";
 import { useNavigate } from 'react-router-dom';
 import AuthRequests from "../../fetch/AuthRequests";
-import appIcon from "../../assets/app-icon.png";
+
 
 function Navegacao(): JSX.Element {
     const [menuAberto, setMenuAberto] = useState(false);
@@ -31,7 +31,7 @@ function Navegacao(): JSX.Element {
             <div className="flex items-center justify-between px-4 py-3 min-h-[64px]">
                 {/* Logo + Links (desktop) */}
                 <div className="flex items-center gap-2">
-                    <img src={appIcon} alt="logo" className="h-10 w-auto" />
+
                     <nav className="hidden sm:flex items-center gap-1 ml-4">
                         {links.map((link) => (
                             <a
