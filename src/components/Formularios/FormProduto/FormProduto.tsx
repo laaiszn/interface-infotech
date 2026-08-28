@@ -21,7 +21,7 @@ function FormProduto() {
     useEffect(() => {
         const carregarCategorias = async () => {
             const resposta = await CategoriaRequests.listarCategorias();
-            if (resposta) {
+            if (resposta !== null && resposta !== undefined) {
                 setCategorias(resposta);
             }
         };
@@ -43,7 +43,7 @@ function FormProduto() {
         e.preventDefault();
 
         const resposta = await ProdutoRequests.enviarFormularioProduto(formData);
-        if (resposta) {
+        if (resposta !== null && resposta !== undefined) {
             alert("Produto cadastrado com sucesso");
             navigate('/lista/produtos');
         } else {
