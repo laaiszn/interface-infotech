@@ -1,212 +1,491 @@
-import { useState, useEffect, type JSX } from "react";
+import {
+    useState,
+    useEffect,
+    type JSX,
+    type ChangeEvent,
+} from "react";
 import type ProdutoDTO from "../../dto/ProdutoDTO";
 import ProdutoRequests from "../../fetch/ProdutoRequests";
 import { useNavigate } from "react-router-dom";
 
 function ListagemProdutos(): JSX.Element {
     const [produtos, setProdutos] = useState<ProdutoDTO[]>([]);
+    const [busca, setBusca] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
+    const [carregando, setCarregando] = useState(true);
+
     const rowsPerPage = 5;
     const navigate = useNavigate();
 
     useEffect(() => {
         const buscarProdutos = async () => {
             try {
-                const listaDeProdutos = await ProdutoRequests.obterListaDeProdutos();
+                setCarregando(true);
+
+                const listaDeProdutos =
+                    await ProdutoRequests.obterListaDeProdutos();
+
                 setProdutos(listaDeProdutos);
             } catch (error) {
-                console.error(`Erro ao buscar produtos. ${error}`);
-                alert("Erro ao criar a listagem de produtos.");
+                console.error(
+                    `Erro ao buscar produtos. ${error}`
+                );
+
+                alert(
+                    "Erro ao carregar a listagem de produtos."
+                );
+            } finally {
+                setCarregando(false);
             }
         };
 
         buscarProdutos();
     }, []);
 
-    const totalPages = Math.ceil(produtos.length / rowsPerPage);
-    const indexOfLastRow = currentPage * rowsPerPage;
-    const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-    const currentProdutos = produtos.slice(indexOfFirstRow, indexOfLastRow);
+    /* FILTRO */
+    const produtosFiltrados = produtos.filter((produto) => {
+        const termo = busca.toLowerCase().trim();
 
-    const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+        if (!termo) {
+            return true;
+        }
 
-    const handleRemoverProduto = async (id_produto: number) => {
-        const confirmar = window.confirm(
-            "Você realmente deseja remover este registro?"
+        return (
+            produto.nome?.toLowerCase().includes(termo) ||
+            produto.codigo?.toLowerCase().includes(termo) ||
+            produto.descricao?.toLowerCase().includes(termo)
+        );
+    });
+
+    /* PAGINAÇÃO */
+    const totalPages = Math.max(
+        1,
+        Math.ceil(
+            produtosFiltrados.length / rowsPerPage
+        )
+    );
+
+    const indexOfLastRow =
+        currentPage * rowsPerPage;
+
+    const indexOfFirstRow =
+        indexOfLastRow - rowsPerPage;
+
+    const currentProdutos =
+        produtosFiltrados.slice(
+            indexOfFirstRow,
+            indexOfLastRow
         );
 
-        if (confirmar) {
-            try {
-                const sucesso = await ProdutoRequests.removerProduto(id_produto);
+    const paginate = (pageNumber: number) => {
+        setCurrentPage(
+            Math.min(
+                Math.max(pageNumber, 1),
+                totalPages
+            )
+        );
+    };
 
-                if (sucesso) {
-                    alert("Produto removido com sucesso");
+    /* BUSCA */
+    const handleBusca = (
+        event: ChangeEvent<HTMLInputElement>
+    ) => {
+        setBusca(event.target.value);
+        setCurrentPage(1);
+    };
 
-                    setProdutos(
-                        produtos.filter(
-                            produto => produto.id_produto !== id_produto
+    /* REMOVER */
+    const handleRemoverProduto = async (
+        id_produto: number
+    ) => {
+        const confirmar = window.confirm(
+            "Você realmente deseja remover este produto?"
+        );
+
+        if (!confirmar) {
+            return;
+        }
+
+        try {
+            const sucesso =
+                await ProdutoRequests.removerProduto(
+                    id_produto
+                );
+
+            if (sucesso) {
+                alert(
+                    "Produto removido com sucesso."
+                );
+
+                setProdutos(
+                    (produtosAtuais) =>
+                        produtosAtuais.filter(
+                            (produto) =>
+                                produto.id_produto !==
+                                id_produto
                         )
-                    );
-                } else {
-                    alert("Não foi possível remover o registro.");
-                }
-            } catch (error) {
-                console.error("Erro ao remover produto:", error);
-                alert("Erro ao remover produto.");
+                );
+            } else {
+                alert(
+                    "Não foi possível remover o produto."
+                );
             }
+        } catch (error) {
+            console.error(
+                "Erro ao remover produto:",
+                error
+            );
+
+            alert("Erro ao remover produto.");
         }
     };
 
+    /* PREÇO */
+    const formatarPreco = (preco: number) => {
+        return new Intl.NumberFormat("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+        }).format(preco);
+    };
+
+    /* ESTOQUE */
+    const estoqueBaixo = (produto: ProdutoDTO) => {
+        return (
+            produto.quantidade_disponivel <=
+            produto.quantidade_minima
+        );
+    };
+
     return (
-        <main className="bg-gray-200 flex-1 flex flex-col px-4 sm:px-6 md:px-10 py-6 md:py-10 overflow-hidden">
+        <main className="flex-1 bg-violet-50 px-4 py-6 sm:px-6 lg:px-8">
 
-            <div className="w-full max-w-7xl mx-auto flex flex-col sm:flex-row items-center gap-4 mb-6 md:mb-8 flex-shrink-0">
+            <div className="mx-auto w-full max-w-[1500px]">
 
-                <h1 className="flex-1 text-xl sm:text-2xl md:text-3xl text-center sm:text-left font-bold text-slate-800">
-                    Produtos
-                </h1>
+                {/* CABEÇALHO */}
+                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
-                <a
-                    href="/cadastro/produto"
-                    className="w-full sm:w-auto px-4 py-2 md:px-6 md:py-3 text-sm md:text-base bg-slate-700 rounded-md text-center text-white font-bold flex items-center justify-center hover:cursor-pointer hover:bg-slate-600 transition-all shadow-md hover:shadow-lg active:scale-95"
-                >
-                    Novo Produto
-                </a>
+                    <div>
+                        <div className="mb-1 flex items-center gap-2">
 
-            </div>
+                            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100 text-violet-700">
+                                <i className="pi pi-box" />
+                            </span>
 
-            <input
-                type="text"
-                name="buscar-produto"
-                id="buscar-produto"
-                placeholder="Buscar produto"
-                className="w-full max-w-6xl mx-auto p-3 md:p-2 md:mb-4 border-b-2 border-slate-700 rounded-sm"
-            />
+                            <h1 className="text-2xl font-bold tracking-tight text-violet-950 sm:text-3xl">
+                                Produtos
+                            </h1>
 
-            <div className="w-full max-w-7xl mx-auto flex-1 flex flex-col min-h-0 bg-white rounded-xl shadow-xl border border-slate-300 overflow-hidden">
+                        </div>
 
-                <div className="flex-1 overflow-auto overscroll-none">
+                        <p className="text-sm text-slate-500">
+                            Gerencie os produtos cadastrados no sistema.
+                        </p>
+                    </div>
 
-                    <table className="table-auto w-full border-collapse text-xs sm:text-sm md:text-base">
+                    <button
+                        type="button"
+                        onClick={() =>
+                            navigate(
+                                "/cadastro/produto"
+                            )
+                        }
+                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-violet-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-800 hover:shadow-md active:scale-[0.98]"
+                    >
+                        <span className="text-lg leading-none">
+                            +
+                        </span>
 
-                        <thead className="bg-slate-700 sticky top-0 z-10 shadow-sm">
+                        Novo Produto
+                    </button>
 
-                            <tr>
+                </div>
 
-                                <th className="border-b border-slate-600 text-white p-3 md:p-4 hidden md:table-cell text-left">
-                                    ID
-                                </th>
+                {/* BUSCA */}
+                <div className="mb-5 rounded-xl border border-violet-100 bg-white p-4 shadow-sm">
 
-                                <th className="border-b border-slate-600 text-white p-3 md:p-4 text-left">
-                                    Código
-                                </th>
+                    <div className="relative">
 
-                                <th className="border-b border-slate-600 text-white p-3 md:p-4 text-left">
-                                    Nome
-                                </th>
+                        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-violet-400">
+                            <i className="pi pi-search" />
+                        </span>
 
-                                <th className="border-b border-slate-600 text-white p-3 md:p-4 hidden md:table-cell text-left">
-                                    Descrição
-                                </th>
+                        <input
+                            type="text"
+                            name="buscar-produto"
+                            id="buscar-produto"
+                            value={busca}
+                            onChange={handleBusca}
+                            placeholder="Buscar por nome, código ou descrição..."
+                            className="w-full rounded-lg border border-slate-200 bg-violet-50/40 py-3 pl-11 pr-10 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-violet-500 focus:bg-white focus:ring-2 focus:ring-violet-200"
+                        />
 
-                                <th className="border-b border-slate-600 text-white p-3 md:p-4 text-left">
-                                    Preço
-                                </th>
+                        {busca && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setBusca("");
+                                    setCurrentPage(1);
+                                }}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-sm text-slate-400 transition hover:bg-violet-100 hover:text-violet-700"
+                            >
+                                <i className="pi pi-times" />
+                            </button>
+                        )}
 
-                                <th className="border-b border-slate-600 text-white p-3 md:p-4 hidden lg:table-cell text-center">
-                                    Quantidade
-                                </th>
+                    </div>
 
-                                <th className="border-b border-slate-600 text-white p-3 md:p-4 hidden lg:table-cell text-center">
-                                    Mínima
-                                </th>
+                </div>
 
-                                <th className="border-b border-slate-600 text-white p-3 md:p-4 text-center">
-                                    Ações
-                                </th>
+                {/* TABELA */}
+                <div className="overflow-hidden rounded-xl border border-violet-100 bg-white shadow-sm">
 
-                            </tr>
+                    {/* CABEÇALHO DO CARD */}
+                    <div className="flex flex-col gap-2 border-b border-violet-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
 
-                        </thead>
+                        <div>
+                            <h2 className="font-semibold text-violet-950">
+                                Lista de produtos
+                            </h2>
 
-                        <tbody className="divide-y divide-slate-200">
+                            <p className="text-xs text-slate-500">
+                                {produtosFiltrados.length}{" "}
+                                {produtosFiltrados.length === 1
+                                    ? "produto encontrado"
+                                    : "produtos encontrados"}
+                            </p>
+                        </div>
 
-                            {currentProdutos && currentProdutos.length > 0 ? (
+                        {busca && (
+                            <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-medium text-violet-700">
+                                Busca: "{busca}"
+                            </span>
+                        )}
 
-                                currentProdutos.map((produto) => (
+                    </div>
 
-                                    <tr
-                                        className="text-center md:text-left transition-colors hover:bg-slate-50 group"
-                                        key={produto.id_produto}
-                                    >
+                    {/* TABELA */}
+                    <div className="overflow-x-auto">
 
-                                        <td className="p-3 md:p-4 hidden md:table-cell text-slate-500">
-                                            {produto.id_produto}
+                        <table className="w-full min-w-[900px] text-left text-sm">
+
+                            <thead className="bg-violet-950 text-xs uppercase tracking-wide text-violet-100">
+
+                                <tr>
+
+                                    <th className="px-5 py-4">
+                                        ID
+                                    </th>
+
+                                    <th className="px-5 py-4">
+                                        Código
+                                    </th>
+
+                                    <th className="px-5 py-4">
+                                        Produto
+                                    </th>
+
+                                    <th className="px-5 py-4">
+                                        Descrição
+                                    </th>
+
+                                    <th className="px-5 py-4">
+                                        Preço
+                                    </th>
+
+                                    <th className="px-5 py-4 text-center">
+                                        Estoque
+                                    </th>
+
+                                    <th className="px-5 py-4 text-center">
+                                        Mínima
+                                    </th>
+
+                                    <th className="px-5 py-4 text-center">
+                                        Ações
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody className="divide-y divide-violet-100">
+
+                                {carregando ? (
+
+                                    <tr>
+                                        <td
+                                            colSpan={8}
+                                            className="px-5 py-14 text-center"
+                                        >
+                                            <div className="flex flex-col items-center gap-3 text-slate-400">
+
+                                                <div className="h-8 w-8 animate-spin rounded-full border-4 border-violet-100 border-t-violet-700" />
+
+                                                <span className="text-sm">
+                                                    Carregando produtos...
+                                                </span>
+
+                                            </div>
                                         </td>
+                                    </tr>
 
-                                        <td className="p-3 md:p-4 text-slate-600">
-                                            {produto.codigo}
-                                        </td>
+                                ) : currentProdutos.length > 0 ? (
 
-                                        <td className="p-3 md:p-4 font-medium text-slate-700">
-                                            {produto.nome}
-                                        </td>
+                                    currentProdutos.map(
+                                        (produto) => (
 
-                                        <td className="p-3 md:p-4 hidden md:table-cell text-slate-600">
-                                            {produto.descricao}
-                                        </td>
+                                            <tr
+                                                key={
+                                                    produto.id_produto
+                                                }
+                                                className="group transition-colors hover:bg-violet-50/60"
+                                            >
 
-                                        <td className="p-3 md:p-4 text-slate-700">
-                                            {new Intl.NumberFormat("pt-BR", {
-                                                style: "currency",
-                                                currency: "BRL"
-                                            }).format(produto.preco_unitario)}
-                                        </td>
-
-                                        <td className="p-3 md:p-4 hidden lg:table-cell text-center text-slate-600">
-                                            {produto.quantidade_disponivel}
-                                        </td>
-
-                                        <td className="p-3 md:p-4 hidden lg:table-cell text-center text-slate-600">
-                                            {produto.quantidade_minima}
-                                        </td>
-
-                                        <td className="p-2 md:p-4">
-
-                                            <div className="flex flex-col sm:flex-row items-center justify-center gap-1 md:gap-2">
-
-                                                <button
-                                                    onClick={() =>
-                                                        navigate(
-                                                            `/detalhes/produto/${produto.id_produto}`
-                                                        )
+                                                {/* ID */}
+                                                <td className="px-5 py-4 font-medium text-slate-400">
+                                                    #
+                                                    {
+                                                        produto.id_produto
                                                     }
-                                                    className="w-full sm:w-auto bg-sky-100 text-sky-700 px-3 py-1.5 rounded-md text-xs md:text-sm font-medium hover:bg-sky-600 hover:text-white transition-all"
-                                                >
-                                                    Detalhes
-                                                </button>
+                                                </td>
 
-                                                <button
-                                                    onClick={() =>
-                                                        navigate(
-                                                            `/atualizar/produto/${produto.id_produto}`
-                                                        )
-                                                    }
-                                                    className="w-full sm:w-auto bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-md text-xs md:text-sm font-medium hover:bg-emerald-600 hover:text-white transition-all"
-                                                >
-                                                    Atualizar
-                                                </button>
+                                                {/* CÓDIGO */}
+                                                <td className="px-5 py-4">
 
-                                                <button
-                                                    className="w-full sm:w-auto bg-red-100 text-red-700 px-3 py-1.5 rounded-md text-xs md:text-sm font-medium hover:bg-red-600 hover:text-white transition-all"
-                                                    onClick={() =>
-                                                        handleRemoverProduto(
-                                                            produto.id_produto
+                                                    <span className="rounded-md bg-violet-100 px-2.5 py-1 font-mono text-xs font-medium text-violet-700">
+                                                        {
+                                                            produto.codigo
+                                                        }
+                                                    </span>
+
+                                                </td>
+
+                                                {/* NOME */}
+                                                <td className="px-5 py-4">
+
+                                                    <div className="font-semibold text-violet-950">
+                                                        {
+                                                            produto.nome
+                                                        }
+                                                    </div>
+
+                                                </td>
+
+                                                {/* DESCRIÇÃO */}
+                                                <td className="max-w-xs px-5 py-4">
+
+                                                    <p className="truncate text-slate-500">
+                                                        {
+                                                            produto.descricao
+                                                        }
+                                                    </p>
+
+                                                </td>
+
+                                                {/* PREÇO */}
+                                                <td className="whitespace-nowrap px-5 py-4 font-semibold text-slate-700">
+                                                    {formatarPreco(
+                                                        produto.preco_unitario
+                                                    )}
+                                                </td>
+
+                                                {/* ESTOQUE */}
+                                                <td className="px-5 py-4 text-center">
+
+                                                    <span
+                                                        className={`inline-flex min-w-12 justify-center rounded-full px-2.5 py-1 text-xs font-bold ${estoqueBaixo(
+                                                            produto
                                                         )
+                                                                ? "bg-red-100 text-red-700"
+                                                                : "bg-emerald-100 text-emerald-700"
+                                                            }`}
+                                                    >
+                                                        {
+                                                            produto.quantidade_disponivel
+                                                        }
+                                                    </span>
+
+                                                </td>
+
+                                                {/* MÍNIMA */}
+                                                <td className="px-5 py-4 text-center text-slate-500">
+                                                    {
+                                                        produto.quantidade_minima
                                                     }
-                                                >
-                                                    Deletar
-                                                </button>
+                                                </td>
+
+                                                {/* AÇÕES */}
+                                                <td className="px-5 py-4">
+
+                                                    <div className="flex items-center justify-center gap-2">
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                navigate(
+                                                                    `/detalhes/produto/${produto.id_produto}`
+                                                                )
+                                                            }
+                                                            className="rounded-lg bg-violet-100 px-3 py-2 text-xs font-semibold text-violet-700 transition hover:bg-violet-700 hover:text-white"
+                                                        >
+                                                            Detalhes
+                                                        </button>
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                navigate(
+                                                                    `/atualizar/produto/${produto.id_produto}`
+                                                                )
+                                                            }
+                                                            className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-600 hover:text-white"
+                                                        >
+                                                            Editar
+                                                        </button>
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                handleRemoverProduto(
+                                                                    produto.id_produto
+                                                                )
+                                                            }
+                                                            className="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-600 hover:text-white"
+                                                        >
+                                                            Excluir
+                                                        </button>
+
+                                                    </div>
+
+                                                </td>
+
+                                            </tr>
+                                        )
+                                    )
+
+                                ) : (
+
+                                    <tr>
+
+                                        <td
+                                            colSpan={8}
+                                            className="px-5 py-16 text-center"
+                                        >
+
+                                            <div className="flex flex-col items-center">
+
+                                                <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-violet-100 text-xl text-violet-600">
+                                                    <i className="pi pi-box" />
+                                                </div>
+
+                                                <h3 className="font-semibold text-violet-950">
+                                                    Nenhum produto encontrado
+                                                </h3>
+
+                                                <p className="mt-1 text-sm text-slate-400">
+                                                    Tente pesquisar por outro nome,
+                                                    código ou descrição.
+                                                </p>
 
                                             </div>
 
@@ -214,169 +493,100 @@ function ListagemProdutos(): JSX.Element {
 
                                     </tr>
 
-                                ))
+                                )}
 
-                            ) : (
+                            </tbody>
 
-                                <tr>
-
-                                    <td
-                                        colSpan={8}
-                                        className="text-center p-10 text-slate-500 italic"
-                                    >
-                                        Nenhum produto encontrado
-                                    </td>
-
-                                </tr>
-
-                            )}
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-                <div className="bg-slate-50 border-t border-slate-200 px-4 py-3 sm:px-6 flex items-center justify-between flex-shrink-0">
-
-                    <div className="flex-1 flex justify-between sm:hidden">
-
-                        <button
-                            onClick={() =>
-                                paginate(Math.max(1, currentPage - 1))
-                            }
-                            disabled={currentPage === 1}
-                            className={`relative inline-flex items-center px-4 py-2 border border-slate-300 text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 ${
-                                currentPage === 1
-                                    ? "opacity-50 cursor-not-allowed"
-                                    : ""
-                            }`}
-                        >
-                            Anterior
-                        </button>
-
-                        <button
-                            onClick={() =>
-                                paginate(
-                                    Math.min(
-                                        totalPages,
-                                        currentPage + 1
-                                    )
-                                )
-                            }
-                            disabled={currentPage === totalPages}
-                            className={`ml-3 relative inline-flex items-center px-4 py-2 border border-slate-300 text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 ${
-                                currentPage === totalPages
-                                    ? "opacity-50 cursor-not-allowed"
-                                    : ""
-                            }`}
-                        >
-                            Próximo
-                        </button>
+                        </table>
 
                     </div>
 
-                    <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    {/* PAGINAÇÃO */}
+                    <div className="flex flex-col gap-4 border-t border-violet-100 bg-violet-50/50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
 
-                        <div>
+                        <p className="text-sm text-slate-500">
 
-                            <p className="text-sm text-slate-700">
-                                Mostrando{" "}
-                                <span className="font-semibold">
-                                    {produtos.length > 0
-                                        ? indexOfFirstRow + 1
-                                        : 0}
-                                </span>{" "}
-                                até{" "}
-                                <span className="font-semibold">
-                                    {Math.min(
-                                        indexOfLastRow,
-                                        produtos.length
-                                    )}
-                                </span>{" "}
-                                de{" "}
-                                <span className="font-semibold">
-                                    {produtos.length}
-                                </span>{" "}
-                                resultados
-                            </p>
+                            Mostrando{" "}
 
-                        </div>
+                            <span className="font-semibold text-violet-800">
+                                {produtosFiltrados.length > 0
+                                    ? indexOfFirstRow + 1
+                                    : 0}
+                            </span>{" "}
 
-                        <div>
+                            até{" "}
 
-                            <nav
-                                className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                                aria-label="Pagination"
+                            <span className="font-semibold text-violet-800">
+                                {Math.min(
+                                    indexOfLastRow,
+                                    produtosFiltrados.length
+                                )}
+                            </span>{" "}
+
+                            de{" "}
+
+                            <span className="font-semibold text-violet-800">
+                                {produtosFiltrados.length}
+                            </span>{" "}
+
+                            resultados
+
+                        </p>
+
+                        <div className="flex items-center gap-1">
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    paginate(
+                                        currentPage - 1
+                                    )
+                                }
+                                disabled={currentPage === 1}
+                                className="rounded-lg border border-violet-200 bg-white px-3 py-2 text-sm text-violet-700 transition hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-40"
                             >
+                                <i className="pi pi-chevron-left" />
+                            </button>
+
+                            {Array.from(
+                                {
+                                    length: totalPages,
+                                },
+                                (_, index) =>
+                                    index + 1
+                            ).map((page) => (
 
                                 <button
+                                    type="button"
+                                    key={page}
                                     onClick={() =>
-                                        paginate(
-                                            Math.max(
-                                                1,
-                                                currentPage - 1
-                                            )
-                                        )
+                                        paginate(page)
                                     }
-                                    disabled={currentPage === 1}
-                                    className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-slate-300 bg-white text-sm font-medium text-slate-500 hover:bg-slate-50 ${
-                                        currentPage === 1
-                                            ? "opacity-50 cursor-not-allowed"
-                                            : ""
-                                    }`}
-                                >
-                                    <span className="sr-only">
-                                        Anterior
-                                    </span>
-
-                                    <i className="pi pi-chevron-left"></i>
-                                </button>
-
-                                {[...Array(totalPages)].map((_, i) => (
-
-                                    <button
-                                        key={i + 1}
-                                        onClick={() =>
-                                            paginate(i + 1)
-                                        }
-                                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                                            currentPage === i + 1
-                                                ? "z-10 bg-slate-700 border-slate-700 text-white"
-                                                : "bg-white border-slate-300 text-slate-500 hover:bg-slate-50"
+                                    className={`min-w-9 rounded-lg px-3 py-2 text-sm font-medium transition ${currentPage === page
+                                            ? "bg-violet-700 text-white shadow-sm"
+                                            : "border border-violet-200 bg-white text-violet-700 hover:bg-violet-100"
                                         }`}
-                                    >
-                                        {i + 1}
-                                    </button>
-
-                                ))}
-
-                                <button
-                                    onClick={() =>
-                                        paginate(
-                                            Math.min(
-                                                totalPages,
-                                                currentPage + 1
-                                            )
-                                        )
-                                    }
-                                    disabled={
-                                        currentPage === totalPages
-                                    }
-                                    className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-slate-300 bg-white text-sm font-medium text-slate-500 hover:bg-slate-50 ${
-                                        currentPage === totalPages
-                                            ? "opacity-50 cursor-not-allowed"
-                                            : ""
-                                    }`}
                                 >
-                                    <span className="sr-only">
-                                        Próximo
-                                    </span>
-
-                                    <i className="pi pi-chevron-right"></i>
+                                    {page}
                                 </button>
 
-                            </nav>
+                            ))}
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    paginate(
+                                        currentPage + 1
+                                    )
+                                }
+                                disabled={
+                                    currentPage ===
+                                    totalPages
+                                }
+                                className="rounded-lg border border-violet-200 bg-white px-3 py-2 text-sm text-violet-700 transition hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                <i className="pi pi-chevron-right" />
+                            </button>
 
                         </div>
 
