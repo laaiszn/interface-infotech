@@ -7,7 +7,9 @@ import CategoriaRequests from '../../../fetch/CategoriaRequests';
 
 function FormProduto() {
     const navigate = useNavigate();
+
     const [categorias, setCategorias] = useState<CategoriaDTO[]>([]);
+
     const [formData, setFormData] = useState<ProdutoDTO>({
         id_categoria: 0,
         codigo: '',
@@ -20,30 +22,46 @@ function FormProduto() {
 
     useEffect(() => {
         const carregarCategorias = async () => {
-            const resposta = await CategoriaRequests.listarCategorias();
-            if (resposta !== null && resposta !== undefined) {
+      const resposta = await CategoriaRequests.obterListaDeCategorias();
+
+            if (resposta) {
                 setCategorias(resposta);
             }
         };
+
         carregarCategorias();
     }, []);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const handleChange = (
+        e: React.ChangeEvent<
+            HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+        >
+    ) => {
         const { name, value, type } = e.target;
 
+        // Campos numéricos precisam ser convertidos
         if (type === 'number') {
-            setFormData(prev => ({ ...prev, [name]: Number(value) }));
+            setFormData(prev => ({
+                ...prev,
+                [name]: Number(value)
+            }));
+
             return;
         }
 
-        setFormData(prev => ({ ...prev, [name]: value }));
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        const resposta = await ProdutoRequests.enviarFormularioProduto(formData);
-        if (resposta !== null && resposta !== undefined) {
+        const resposta =
+            await ProdutoRequests.enviarFormularioProduto(formData);
+
+        if (resposta) {
             alert("Produto cadastrado com sucesso");
             navigate('/lista/produtos');
         } else {
@@ -53,19 +71,31 @@ function FormProduto() {
 
     return (
         <main className="bg-gray-100 flex-1 py-8 sm:py-12 px-4 sm:px-6 lg:px-8 overflow-y-auto">
+
             <div className="max-w-3xl mx-auto">
-                <form onSubmit={handleSubmit} className="bg-white shadow-2xl rounded-2xl p-6 sm:p-10 border border-slate-200">
+
+                <form
+                    onSubmit={handleSubmit}
+                    className="bg-white shadow-2xl rounded-2xl p-6 sm:p-10 border border-slate-200"
+                >
+
                     <h1 className="text-3xl sm:text-4xl md:text-5xl text-center font-bold text-slate-800 mb-8 sm:mb-12">
                         Cadastro de Produto
                     </h1>
 
                     <div className="space-y-6 sm:space-y-8">
+
                         {/* Linha 1: Categoria e Código */}
                         <div className="flex flex-col sm:flex-row gap-6">
+
                             <div className="flex-1">
-                                <label htmlFor="id_categoria" className="block text-sm font-semibold text-slate-700 mb-2">
+                                <label
+                                    htmlFor="id_categoria"
+                                    className="block text-sm font-semibold text-slate-700 mb-2"
+                                >
                                     Categoria
                                 </label>
+
                                 <select
                                     name="id_categoria"
                                     id="id_categoria"
@@ -74,9 +104,15 @@ function FormProduto() {
                                     defaultValue=""
                                     className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-slate-500 focus:outline-none transition-all"
                                 >
-                                    <option value="" disabled>Selecione a categoria</option>
+                                    <option value="" disabled>
+                                        Selecione a categoria
+                                    </option>
+
                                     {categorias.map((categoria) => (
-                                        <option key={categoria.id_categoria} value={categoria.id_categoria}>
+                                        <option
+                                            key={categoria.id_categoria}
+                                            value={categoria.id_categoria}
+                                        >
                                             {categoria.nome}
                                         </option>
                                     ))}
@@ -84,9 +120,13 @@ function FormProduto() {
                             </div>
 
                             <div className="flex-1">
-                                <label htmlFor="codigo" className="block text-sm font-semibold text-slate-700 mb-2">
+                                <label
+                                    htmlFor="codigo"
+                                    className="block text-sm font-semibold text-slate-700 mb-2"
+                                >
                                     Código
                                 </label>
+
                                 <input
                                     type="text"
                                     name="codigo"
@@ -98,14 +138,20 @@ function FormProduto() {
                                     className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-slate-500 focus:outline-none transition-all placeholder:text-slate-400"
                                 />
                             </div>
+
                         </div>
 
                         {/* Linha 2: Nome e Preço Unitário */}
                         <div className="flex flex-col sm:flex-row gap-6">
+
                             <div className="flex-1">
-                                <label htmlFor="nome" className="block text-sm font-semibold text-slate-700 mb-2">
+                                <label
+                                    htmlFor="nome"
+                                    className="block text-sm font-semibold text-slate-700 mb-2"
+                                >
                                     Nome
                                 </label>
+
                                 <input
                                     type="text"
                                     name="nome"
@@ -120,9 +166,13 @@ function FormProduto() {
                             </div>
 
                             <div className="flex-1">
-                                <label htmlFor="preco_unitario" className="block text-sm font-semibold text-slate-700 mb-2">
+                                <label
+                                    htmlFor="preco_unitario"
+                                    className="block text-sm font-semibold text-slate-700 mb-2"
+                                >
                                     Preço Unitário (R$)
                                 </label>
+
                                 <input
                                     type="number"
                                     name="preco_unitario"
@@ -135,30 +185,42 @@ function FormProduto() {
                                     className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-slate-500 focus:outline-none transition-all placeholder:text-slate-400"
                                 />
                             </div>
+
                         </div>
 
                         {/* Linha 3: Descrição */}
                         <div className="flex-1">
-                            <label htmlFor="descricao" className="block text-sm font-semibold text-slate-700 mb-2">
+
+                            <label
+                                htmlFor="descricao"
+                                className="block text-sm font-semibold text-slate-700 mb-2"
+                            >
                                 Descrição
                             </label>
+
                             <textarea
                                 name="descricao"
                                 id="descricao"
                                 maxLength={255}
                                 onChange={handleChange}
-                                placeholder="Descrição do produto (opcional)"
+                                placeholder="Descrição do produto"
                                 rows={3}
                                 className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-slate-500 focus:outline-none transition-all placeholder:text-slate-400"
                             />
+
                         </div>
 
                         {/* Linha 4: Quantidades */}
                         <div className="flex flex-col sm:flex-row gap-6">
+
                             <div className="flex-1">
-                                <label htmlFor="quantidade_disponivel" className="block text-sm font-semibold text-slate-700 mb-2">
+                                <label
+                                    htmlFor="quantidade_disponivel"
+                                    className="block text-sm font-semibold text-slate-700 mb-2"
+                                >
                                     Quantidade Disponível
                                 </label>
+
                                 <input
                                     type="number"
                                     name="quantidade_disponivel"
@@ -172,9 +234,13 @@ function FormProduto() {
                             </div>
 
                             <div className="flex-1">
-                                <label htmlFor="quantidade_minima" className="block text-sm font-semibold text-slate-700 mb-2">
+                                <label
+                                    htmlFor="quantidade_minima"
+                                    className="block text-sm font-semibold text-slate-700 mb-2"
+                                >
                                     Quantidade Mínima
                                 </label>
+
                                 <input
                                     type="number"
                                     name="quantidade_minima"
@@ -186,15 +252,20 @@ function FormProduto() {
                                     className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-slate-500 focus:outline-none transition-all placeholder:text-slate-400"
                                 />
                             </div>
+
                         </div>
+
                     </div>
 
+                    {/* Botões */}
                     <div className="mt-10 sm:mt-14 space-y-4">
+
                         <input
                             type="submit"
                             value="CADASTRAR PRODUTO"
                             className="w-full bg-slate-800 text-white py-4 rounded-xl font-bold text-lg cursor-pointer hover:bg-slate-700 shadow-lg hover:shadow-xl transition-all active:scale-[0.98]"
                         />
+
                         <button
                             type="button"
                             onClick={() => navigate('/lista/produtos')}
@@ -202,9 +273,13 @@ function FormProduto() {
                         >
                             VOLTAR PARA LISTAGEM
                         </button>
+
                     </div>
+
                 </form>
+
             </div>
+
         </main>
     );
 }
