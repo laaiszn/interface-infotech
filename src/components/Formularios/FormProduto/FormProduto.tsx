@@ -11,6 +11,7 @@ function FormProduto() {
     const [categorias, setCategorias] = useState<CategoriaDTO[]>([]);
 
     const [formData, setFormData] = useState<ProdutoDTO>({
+        id_produto: 0,
         id_categoria: 0,
         codigo: '',
         nome: '',

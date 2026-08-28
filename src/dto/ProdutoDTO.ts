@@ -1,4 +1,5 @@
 export default interface ProdutoDTO {
+    id_produto: number;
     id_categoria: number;
     codigo: string;
     nome: string;
