@@ -114,6 +114,10 @@ function ListagemCategorias(): JSX.Element {
         }
     };
 
+    const removerCategoria = (id_categoria: number): void => {
+        handleRemoverCategoria(id_categoria);
+    };
+
     return (
         <main className="flex-1 bg-violet-50 px-4 py-6 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-7xl">
@@ -162,7 +166,7 @@ function ListagemCategorias(): JSX.Element {
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead>
-                                    <tr className="bg-violet-600 text-left text-sm text-white">
+                                    <tr className="bg-violet-950 text-xs uppercase tracking-wide text-violet-100">
                                         <th className="px-6 py-4">
                                             ID
                                         </th>
@@ -200,47 +204,31 @@ function ListagemCategorias(): JSX.Element {
                                                     </td>
 
                                                     <td className="px-6 py-4">
-                                                        <div className="flex justify-center gap-2">
-
-                                                            {/* DETALHES */}
+                                                        <div className="flex items-center justify-center gap-2">
                                                             <button
-                                                                type="button"
                                                                 onClick={() =>
-                                                                    navigate(
-                                                                        `/detalhes/categoria/${categoria.id_categoria}`
-                                                                    )
+                                                                    navigate(`/detalhes/categoria/${categoria.id_categoria}`)
                                                                 }
-                                                                className="rounded-lg bg-blue-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-600"
+                                                                className="rounded-lg bg-purple-100 px-3 py-2 text-sm font-medium text-purple-700 transition hover:bg-purple-200"
                                                             >
                                                                 Detalhes
                                                             </button>
 
-                                                            {/* EDITAR */}
                                                             <button
-                                                                type="button"
                                                                 onClick={() =>
-                                                                    navigate(
-                                                                        `/atualizar/categoria/${categoria.id_categoria}`
-                                                                    )
+                                                                    navigate(`/atualizar/categoria/${categoria.id_categoria}`)
                                                                 }
-                                                                className="rounded-lg bg-amber-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
+                                                                className="rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-600 transition hover:bg-emerald-100"
                                                             >
                                                                 Editar
                                                             </button>
 
-                                                            {/* EXCLUIR */}
                                                             <button
-                                                                type="button"
-                                                                onClick={() =>
-                                                                    handleRemoverCategoria(
-                                                                        categoria.id_categoria
-                                                                    )
-                                                                }
-                                                                className="rounded-lg bg-red-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-red-600"
+                                                                onClick={() => removerCategoria(categoria.id_categoria)}
+                                                                className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100"
                                                             >
                                                                 Excluir
                                                             </button>
-
                                                         </div>
                                                     </td>
                                                 </tr>

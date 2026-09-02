@@ -156,6 +156,10 @@ function ListagemProdutos(): JSX.Element {
         );
     };
 
+    const remover = (id_produto: number): void => {
+        handleRemoverProduto(id_produto);
+    };
+
     return (
         <main className="flex-1 bg-violet-50 px-4 py-6 sm:px-6 lg:px-8">
 
@@ -396,8 +400,8 @@ function ListagemProdutos(): JSX.Element {
                                                         className={`inline-flex min-w-12 justify-center rounded-full px-2.5 py-1 text-xs font-bold ${estoqueBaixo(
                                                             produto
                                                         )
-                                                                ? "bg-red-100 text-red-700"
-                                                                : "bg-emerald-100 text-emerald-700"
+                                                            ? "bg-red-100 text-red-700"
+                                                            : "bg-emerald-100 text-emerald-700"
                                                             }`}
                                                     >
                                                         {
@@ -418,43 +422,30 @@ function ListagemProdutos(): JSX.Element {
                                                 <td className="px-5 py-4">
 
                                                     <div className="flex items-center justify-center gap-2">
-
                                                         <button
-                                                            type="button"
                                                             onClick={() =>
-                                                                navigate(
-                                                                    `/detalhes/produto/${produto.id_produto}`
-                                                                )
+                                                                navigate(`/detalhes/produto/${produto.id_produto}`)
                                                             }
-                                                            className="rounded-lg bg-violet-100 px-3 py-2 text-xs font-semibold text-violet-700 transition hover:bg-violet-700 hover:text-white"
+                                                            className="rounded-lg bg-purple-100 px-3 py-2 text-sm font-medium text-purple-700 transition hover:bg-purple-200"
                                                         >
                                                             Detalhes
                                                         </button>
 
                                                         <button
-                                                            type="button"
                                                             onClick={() =>
-                                                                navigate(
-                                                                    `/atualizar/produto/${produto.id_produto}`
-                                                                )
+                                                                navigate(`/atualizar/produto/${produto.id_produto}`)
                                                             }
-                                                            className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-600 hover:text-white"
+                                                            className="rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-600 transition hover:bg-emerald-100"
                                                         >
                                                             Editar
                                                         </button>
 
                                                         <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                handleRemoverProduto(
-                                                                    produto.id_produto
-                                                                )
-                                                            }
-                                                            className="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-600 hover:text-white"
+                                                            onClick={() => remover(produto.id_produto)}
+                                                            className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100"
                                                         >
                                                             Excluir
                                                         </button>
-
                                                     </div>
 
                                                 </td>
@@ -563,8 +554,8 @@ function ListagemProdutos(): JSX.Element {
                                         paginate(page)
                                     }
                                     className={`min-w-9 rounded-lg px-3 py-2 text-sm font-medium transition ${currentPage === page
-                                            ? "bg-violet-700 text-white shadow-sm"
-                                            : "border border-violet-200 bg-white text-violet-700 hover:bg-violet-100"
+                                        ? "bg-violet-700 text-white shadow-sm"
+                                        : "border border-violet-200 bg-white text-violet-700 hover:bg-violet-100"
                                         }`}
                                 >
                                     {page}
