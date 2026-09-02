@@ -15,11 +15,10 @@ import PDetalhesProduto from "./pages/PDetalhesProduto/PDetalhesProduto";
 
 import PListagemCategoria from "./pages/PListagemCategoria/PListagemCategoria";
 import PDetalhesCategoria from "./pages/PDetalhesCategoria/PDetalhesCategoria";
-import PAtualizarCategoria from "./pages/PAtualizarCategoria/PAtualizarCategoria";
-
+import PAtualizarCategoria from "./pages/PAtualizar/PAtualizarCategoria/PAtualizarCategoria";
 import PListagemMovimentacao from "./pages/PListagemMovimetacao/PListagemMovimentacao";
 import PDetalhesMovimentacao from "./pages/PDetalhesMovimentacao/PDetalhesMovimentacao";
-import PAtualizarMovimentacao from "./pages/PAtualizarMovimentacao/PAtualizarMovimentacao";
+import PAtualizarMovimentacao from "./pages/PAtualizar/PAtualizarMovimentacao/PAtualizarMovimentacao";
 
 function App() {
     return (
