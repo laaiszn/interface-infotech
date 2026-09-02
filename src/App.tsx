@@ -1,26 +1,51 @@
+import "./App.css";
+import {
+    BrowserRouter,
+    Routes,
+    Route,
+} from "react-router-dom";
 
-import './App.css'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import PHome from './pages/PHome/PHome'
-import PLogin from './pages/PLogin/PLogin'
-import PListagemProduto from './pages/PListagemProduto/PListagemProduto'
-// import ProtectedRoute from './components/Rotas/ProtectedRoutes'
+import PHome from "./pages/PHome/PHome";
+import PLogin from "./pages/PLogin/PLogin";
+import PListagemProduto from "./pages/PListagemProduto/PListagemProduto";
+import PListagemCategoria from "./pages/PListagemCategoria/PListagemCategoria";
+import PListagemMovimentacao from "./pages/PListagemMovimetacao/PListagemMovimentacao";
 
 function App() {
+    return (
+        <BrowserRouter>
+            <Routes>
 
-  return (
-    <BrowserRouter>
+                <Route
+                    path="/"
+                    element={<PHome />}
+                />
 
-      <Routes>
-        <Route path='/' element={<PHome />} />
-        <Route path='/login' element={<PLogin />} />
-        <Route
-          path='/lista/produtos'
-          element={<PListagemProduto />}
-        />
-      </Routes>
-    </BrowserRouter>
-  )
+                <Route
+                    path="/login"
+                    element={<PLogin />}
+                />
+
+     
+                <Route
+                    path="/lista/produtos"
+                    element={<PListagemProduto />}
+                />
+
+          
+                <Route
+                    path="/lista/categorias"
+                    element={<PListagemCategoria />}
+                />
+
+                <Route
+                    path="/lista/movimentacoes"
+                    element={<PListagemMovimentacao />}
+                />
+
+            </Routes>
+        </BrowserRouter>
+    );
 }
 
-export default App
+export default App;
